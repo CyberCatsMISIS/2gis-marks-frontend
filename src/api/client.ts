@@ -30,7 +30,16 @@ class ApiClient {
 
       return await response.json()
     } catch (error) {
-      console.error('API request failed:', error)
+      console.warn('API request failed (backend not available):', error)
+      
+      // Возвращаем моковые данные для разработки
+      if (endpoint.includes('/marks')) {
+        return { marks: [], total: 0, page: 1, limit: 50 } as T
+      }
+      if (endpoint.includes('/tags')) {
+        return { tags: [], categories: [] } as T
+      }
+      
       throw error
     }
   }
