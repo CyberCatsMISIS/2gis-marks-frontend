@@ -1,0 +1,71 @@
+import React, { useEffect, useRef } from 'react'
+import { useMap } from './MapProvider'
+import { useMapStore } from '@/store/useMapStore'
+import { MarkMarker } from './MarkMarker'
+import { NewMarkForm } from './NewMarkForm'
+
+export const MapContainer: React.FC = () => {
+  const mapRef = useRef<HTMLDivElement>(null)
+  const { map, isMapLoaded } = useMap()
+  const { 
+    marks, 
+    isAddingMark, 
+    newMarkPosition, 
+    startAddingMark,
+    setCenter,
+    setZoom 
+  } = useMapStore()
+
+  useEffect(() => {
+    if (map && isMapLoaded) {
+      // Обработка клика по карте для добавления метки
+      const handleMapClick = (e: any) => {
+        if (!isAddingMark) {
+          const coordinates: [number, number] = [e.lngLat.lng, e.lngLat.lat]
+          startAddingMark(coordinates)
+        }
+      }
+
+      // Обработка изменения центра и зума
+      const handleMoveEnd = () => {
+        if (map) {
+          const center = map.getCenter()
+          const zoom = map.getZoom()
+          setCenter([center.lng, center.lat])
+          setZoom(zoom)
+        }
+      }
+
+      map.on('click', handleMapClick)
+      map.on('moveend', handleMoveEnd)
+
+      return () => {
+        map.off('click', handleMapClick)
+        map.off('moveend', handleMoveEnd)
+      }
+    }
+  }, [map, isMapLoaded, isAddingMark, startAddingMark, setCenter, setZoom])
+
+  return (
+    <div className="flex-1 relative">
+      <div 
+        id="map-container" 
+        ref={mapRef}
+        className="w-full h-full"
+      />
+      
+      {/* Отображение меток */}
+      {isMapLoaded && map && marks.map((mark) => (
+        <MarkMarker key={mark.id} mark={mark} map={map} />
+      ))}
+      
+      {/* Форма добавления новой метки */}
+      {isAddingMark && newMarkPosition && (
+        <NewMarkForm 
+          position={newMarkPosition}
+          onClose={() => useMapStore.getState().cancelAddingMark()}
+        />
+      )}
+    </div>
+  )
+}
