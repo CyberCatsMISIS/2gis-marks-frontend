@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { MapPin, Navigation, Route, X } from 'lucide-react'
+import { MapPin, Navigation, Route, X, Plus } from 'lucide-react'
 import { useRouteStore } from '@/store/useRouteStore'
 import { useMapStore } from '@/store/useMapStore'
 import { TagFilter } from '../Tags/TagFilter'

@@ -1,6 +1,6 @@
 import React from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Plus, Search, Filter } from 'lucide-react'
+import { Plus, Search, Filter, MapPin } from 'lucide-react'
 import { marksApi } from '@/api/marks'
 import { useMapStore } from '@/store/useMapStore'
 import { MarkItem } from './MarkItem'

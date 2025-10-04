@@ -29,15 +29,30 @@ export const MapProvider: React.FC<MapProviderProps> = ({ children }) => {
   useEffect(() => {
     const initMap = async () => {
       try {
+        // Проверяем наличие API ключа
+        const apiKey = import.meta.env.VITE_2GIS_API_KEY
+        const appId = import.meta.env.VITE_2GIS_APP_ID
+
+        if (!apiKey) {
+          console.error('VITE_2GIS_API_KEY не найден в переменных окружения')
+          return
+        }
+
         // Инициализация карты 2GIS
         const mapInstance = new MapGL('map-container', {
           center,
           zoom,
-          key: import.meta.env.VITE_2GIS_API_KEY || 'your-api-key-here',
+          key: apiKey,
+          appId: appId || undefined, // AppID опциональный
         })
 
         mapInstance.on('load', () => {
+          console.log('Карта 2GIS загружена')
           setIsMapLoaded(true)
+        })
+
+        mapInstance.on('error', (error: any) => {
+          console.error('Ошибка карты 2GIS:', error)
         })
 
         setMap(mapInstance)

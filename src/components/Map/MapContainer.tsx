@@ -36,12 +36,19 @@ export const MapContainer: React.FC = () => {
         }
       }
 
+      // Обработка ошибок карты
+      const handleMapError = (error: any) => {
+        console.error('Ошибка карты:', error)
+      }
+
       map.on('click', handleMapClick)
       map.on('moveend', handleMoveEnd)
+      map.on('error', handleMapError)
 
       return () => {
         map.off('click', handleMapClick)
         map.off('moveend', handleMoveEnd)
+        map.off('error', handleMapError)
       }
     }
   }, [map, isMapLoaded, isAddingMark, startAddingMark, setCenter, setZoom])
