@@ -51,50 +51,50 @@ export const MapProvider: React.FC<MapProviderProps> = ({ children }) => {
           return;
         }
 
-        load().then((mapgl) => {
-          const map = new mapgl.Map("map-container", {
-            center: [55.31878, 25.23584],
-            zoom: 13,
-            key: apiKey,
-          });
-
-          map.on("load", () => {
-            console.log("Карта 2GIS загружена");
-            setIsLoaded(true);
-          });
-
-          map.on("error", console.error);
-
-          setMapglContext({
-            mapglInstance: map,
-            mapgl,
-          });
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        const mapgl = await load();
+        const map = new mapgl.Map("map-container", {
+          center: [55.31878, 25.23584],
+          zoom: 13,
+          key: apiKey,
         });
+
+        map.on("load", () => {
+          console.log("Карта 2GIS загружена");
+        });
+
+        map.on("error", console.error);
+
+        setMapglContext({
+          mapglInstance: map,
+          mapgl,
+        });
+        setIsLoaded(true);
       } catch (error) {
         console.error("Ошибка инициализации карты:", error);
-        const mapContainer = document.getElementById("map-container");
-        if (mapContainer) {
-          mapContainer.innerHTML = `
-            <div style="
-              width: 100%;
-              height: 100%;
-              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              color: white;
-              font-size: 18px;
-              text-align: center;
-              flex-direction: column;
-              gap: 10px;
-            ">
-              <div>🗺️</div>
-              <div>Карта 2GIS недоступна</div>
-              <div style="font-size: 14px; opacity: 0.8;">Проверьте подключение к интернету или API ключ.</div>
-            </div>
-          `;
-          setIsLoaded(false); // Карта не загружена
-        }
+        // const mapContainer = document.getElementById("map-container");
+        // if (mapContainer) {
+        //   mapContainer.innerHTML = `
+        //     <div style="
+        //       width: 100%;
+        //       height: 100%;
+        //       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        //       display: flex;
+        //       align-items: center;
+        //       justify-content: center;
+        //       color: white;
+        //       font-size: 18px;
+        //       text-align: center;
+        //       flex-direction: column;
+        //       gap: 10px;
+        //     ">
+        //       <div>🗺️</div>
+        //       <div>Карта 2GIS недоступна</div>
+        //       <div style="font-size: 14px; opacity: 0.8;">Проверьте подключение к интернету или API ключ.</div>
+        //     </div>
+        //   `;
+        //   setIsLoaded(false); // Карта не загружена
+        // }
       }
     };
 

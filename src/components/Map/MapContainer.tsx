@@ -1,8 +1,9 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useMapglContext } from "./MapProvider";
 import { useMapStore } from "@/store/useMapStore";
 import { MarkMarker } from "./MarkMarker";
 import { NewMarkForm } from "./NewMarkForm";
+import { MapWrapper } from "./MapWrapper";
 
 export const MapContainer: React.FC = () => {
   const {
@@ -19,10 +20,11 @@ export const MapContainer: React.FC = () => {
     setZoom,
   } = useMapStore();
 
+  const [show, setShow] = useState(true);
+
   useEffect(() => {
     if (isMapLoaded) {
-      console.info(mapgl, map, isMapLoaded);
-      new mapgl.Marker(map, {
+      const marker = new mapgl.Marker(map, {
         coordinates: [55.31878, 25.23584],
       });
       // Обработка клика по карте для добавления метки
@@ -58,32 +60,23 @@ export const MapContainer: React.FC = () => {
         map.off("error", handleMapError);
       };
     }
-  }, [
-    map,
-    mapgl,
-    isMapLoaded,
-    isAddingMark,
-    startAddingMark,
-    setCenter,
-    setZoom,
-  ]);
+  }, [map, mapgl, isMapLoaded]);
 
   return (
     <div className="flex-1 relative">
-      <div id="map-container" className="w-full h-full" />
-
+      <MapWrapper />
       {/* Отображение меток */}
       {isMapLoaded &&
         map &&
         marks.map((mark) => <MarkMarker key={mark.id} mark={mark} map={map} />)}
 
       {/* Форма добавления новой метки */}
-      {isAddingMark && newMarkPosition && (
-        <NewMarkForm
-          position={newMarkPosition}
-          onClose={() => useMapStore.getState().cancelAddingMark()}
-        />
-      )}
+      {/* {isAddingMark && newMarkPosition && ( */}
+      <NewMarkForm
+        position={[55.31878, 25.23584]}
+        onClose={() => setShow(false)}
+      />
+      {/* )} */}
     </div>
   );
 };

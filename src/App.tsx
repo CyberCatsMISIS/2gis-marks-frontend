@@ -1,7 +1,8 @@
-import { MapProvider } from './components/Map/MapProvider'
-import { MapContainer } from './components/Map/MapContainer'
-import { Sidebar } from './components/Layout/Sidebar'
-import { Header } from './components/Layout/Header'
+import { MapProvider } from "./components/Map/MapProvider";
+import { MapContainer } from "./components/Map/MapContainer";
+import { Sidebar } from "./components/Layout/Sidebar";
+import { Header } from "./components/Layout/Header";
+import { MapWrapper } from "./components/Map/MapWrapper";
 
 function App() {
   return (
@@ -14,7 +15,7 @@ function App() {
         </MapProvider>
       </div>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;

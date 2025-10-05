@@ -1,27 +1,31 @@
-import React from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { Plus, Search, Filter, MapPin } from 'lucide-react'
-import { marksApi } from '@/api/marks'
-import { useMapStore } from '@/store/useMapStore'
-import { MarkItem } from './MarkItem'
-import { MarkSearch } from './MarkSearch'
+import React from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Plus, Search, Filter, MapPin } from "lucide-react";
+import { marksApi } from "@/api/marks";
+import { useMapStore } from "@/store/useMapStore";
+import { MarkItem } from "./MarkItem";
+import { MarkSearch } from "./MarkSearch";
 
 export const MarksList: React.FC = () => {
-  const { marks, setSelectedMark, selectedMark } = useMapStore()
+  const { marks, setSelectedMark, selectedMark } = useMapStore();
 
   // Загрузка меток с сервера
-  const { data: marksData, isLoading, error } = useQuery({
-    queryKey: ['marks'],
+  const {
+    data: marksData,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["marks"],
     queryFn: () => marksApi.getMarks(),
-    initialData: { marks, total: marks.length, page: 1, limit: 50 }
-  })
+    initialData: { total: marks.length, page: 1, limit: 50 },
+  });
 
   const handleMarkSelect = (markId: string) => {
-    const mark = marksData?.marks.find(m => m.id === markId)
+    const mark = marksData?.find((m) => m.id === markId);
     if (mark) {
-      setSelectedMark(mark)
+      setSelectedMark(mark);
     }
-  }
+  };
 
   return (
     <div className="p-4 space-y-4">
@@ -50,14 +54,16 @@ export const MarksList: React.FC = () => {
           <div className="text-center py-8 text-red-500">
             Ошибка загрузки меток
           </div>
-        ) : marksData?.marks.length === 0 ? (
+        ) : marksData?.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
             <MapPin className="w-12 h-12 mx-auto mb-4 text-gray-300" />
             <p>У вас пока нет меток</p>
-            <p className="text-sm">Кликните на карту, чтобы добавить первую метку</p>
+            <p className="text-sm">
+              Кликните на карту, чтобы добавить первую метку
+            </p>
           </div>
         ) : (
-          marksData?.marks.map((mark) => (
+          marksData?.map?.((mark) => (
             <MarkItem
               key={mark.id}
               mark={mark}
@@ -74,5 +80,5 @@ export const MarksList: React.FC = () => {
         Добавить метку на карте
       </button>
     </div>
-  )
-}
+  );
+};
