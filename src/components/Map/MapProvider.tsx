@@ -1,87 +1,78 @@
-import React, { createContext, useContext, useEffect, useState } from 'react'
-import { useMapStore } from '@/store/useMapStore'
+import {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  Dispatch,
+  SetStateAction,
+  useEffect,
+} from "react";
+import { useMapStore } from "@/store/useMapStore";
+import type { MapGL as MapGLType } from "@2gis/mapgl";
+import { load } from "@2gis/mapgl";
 
-// Динамический импорт 2GIS Map SDK
-let MapGL: any = null
+const MapglContext = createContext<{
+  mapgl?: typeof mapgl;
+  mapglInstance?: mapgl.Map;
+  setMapglContext: Dispatch<SetStateAction<MapContextState>>;
+}>({
+  mapgl: undefined,
+  mapglInstance: undefined,
+  setMapglContext: () => {},
+});
 
-interface MapContextType {
-  map: MapGL | null
-  isMapLoaded: boolean
+interface MapContextState {
+  mapglInstance?: mapgl.Map;
+  mapgl?: typeof mapgl;
+  isLoaded: boolean;
 }
 
-const MapContext = createContext<MapContextType | null>(null)
-
-export const useMap = () => {
-  const context = useContext(MapContext)
-  if (!context) {
-    throw new Error('useMap должен использоваться внутри MapProvider')
-  }
-  return context
-}
+export const useMapglContext = () => useContext(MapglContext);
 
 interface MapProviderProps {
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
 export const MapProvider: React.FC<MapProviderProps> = ({ children }) => {
-  const [map, setMap] = useState<MapGL | null>(null)
-  const [isMapLoaded, setIsMapLoaded] = useState(false)
-  const { center, zoom } = useMapStore()
+  const [{ mapglInstance, mapgl }, setMapglContext] = useState<MapContextState>(
+    {
+      mapglInstance: undefined,
+      mapgl: undefined,
+    }
+  );
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
     const initMap = async () => {
       try {
         const apiKey = import.meta.env.VITE_2GIS_API_KEY;
         if (!apiKey) {
-          console.error('VITE_2GIS_API_KEY не найден в переменных окружения');
+          console.error("VITE_2GIS_API_KEY не найден в переменных окружения");
           return;
         }
 
-        const loadScript = () => new Promise((resolve, reject) => {
-            if ((window as any).mapgl) {
-                console.log('2GIS SDK уже загружен');
-                return resolve((window as any).mapgl);
-            }
-            const script = document.createElement('script');
-            script.src = 'https://mapgl.2gis.com/api/js/v1';
-            script.onload = () => {
-                if ((window as any).mapgl) {
-                    console.log('2GIS SDK загружен и инициализирован');
-                    resolve((window as any).mapgl);
-                } else {
-                    reject(new Error('mapgl is not available on window'));
-                }
-            };
-            script.onerror = (error) => {
-                console.error('Ошибка загрузки 2GIS SDK:', error);
-                reject(error);
-            };
-            document.head.appendChild(script);
+        load().then((mapgl) => {
+          const map = new mapgl.Map("map-container", {
+            center: [55.31878, 25.23584],
+            zoom: 13,
+            key: apiKey,
+          });
+
+          map.on("load", () => {
+            console.log("Карта 2GIS загружена");
+            setIsLoaded(true);
+          });
+
+          map.on("error", console.error);
+
+          setMapglContext({
+            mapglInstance: map,
+            mapgl,
+          });
         });
-
-        const mapglAPI = await loadScript();
-        MapGL = (mapglAPI as any).Map;
-
-        const mapInstance = new MapGL('map-container', {
-          center: [center[1], center[0]],
-          zoom,
-          key: apiKey,
-        });
-
-        mapInstance.on('load', () => {
-          console.log('Карта 2GIS загружена');
-          setIsMapLoaded(true);
-        });
-
-        mapInstance.on('error', (error: any) => {
-          console.error('Ошибка карты 2GIS:', error);
-        });
-
-        setMap(mapInstance);
-
       } catch (error) {
-        console.error('Ошибка инициализации карты:', error);
-        const mapContainer = document.getElementById('map-container');
+        console.error("Ошибка инициализации карты:", error);
+        const mapContainer = document.getElementById("map-container");
         if (mapContainer) {
           mapContainer.innerHTML = `
             <div style="
@@ -102,7 +93,7 @@ export const MapProvider: React.FC<MapProviderProps> = ({ children }) => {
               <div style="font-size: 14px; opacity: 0.8;">Проверьте подключение к интернету или API ключ.</div>
             </div>
           `;
-          setIsMapLoaded(false); // Карта не загружена
+          setIsLoaded(false); // Карта не загружена
         }
       }
     };
@@ -110,16 +101,17 @@ export const MapProvider: React.FC<MapProviderProps> = ({ children }) => {
     initMap();
 
     return () => {
-      if (map) {
-        map.destroy();
+      if (mapglInstance) {
+        mapglInstance.destroy();
       }
     };
-  }, []); // Зависимости убраны, чтобы избежать повторной инициализации
+  }, []);
 
   return (
-    <MapContext.Provider value={{ map, isMapLoaded }}>
+    <MapglContext.Provider
+      value={{ mapgl, mapglInstance, setMapglContext, isLoaded }}
+    >
       {children}
-    </MapContext.Provider>
-  )
-}
-
+    </MapglContext.Provider>
+  );
+};
