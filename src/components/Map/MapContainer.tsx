@@ -1,78 +1,89 @@
-import React, { useEffect, useRef } from 'react'
-import { useMap } from './MapProvider'
-import { useMapStore } from '@/store/useMapStore'
-import { MarkMarker } from './MarkMarker'
-import { NewMarkForm } from './NewMarkForm'
+import React, { useEffect, useRef } from "react";
+import { useMapglContext } from "./MapProvider";
+import { useMapStore } from "@/store/useMapStore";
+import { MarkMarker } from "./MarkMarker";
+import { NewMarkForm } from "./NewMarkForm";
 
 export const MapContainer: React.FC = () => {
-  const mapRef = useRef<HTMLDivElement>(null)
-  const { map, isMapLoaded } = useMap()
-  const { 
-    marks, 
-    isAddingMark, 
-    newMarkPosition, 
+  const {
+    mapglInstance: map,
+    mapgl,
+    isLoaded: isMapLoaded,
+  } = useMapglContext();
+  const {
+    marks,
+    isAddingMark,
+    newMarkPosition,
     startAddingMark,
     setCenter,
-    setZoom 
-  } = useMapStore()
+    setZoom,
+  } = useMapStore();
 
   useEffect(() => {
-    if (map && isMapLoaded) {
+    if (isMapLoaded) {
+      console.info(mapgl, map, isMapLoaded);
+      new mapgl.Marker(map, {
+        coordinates: [55.31878, 25.23584],
+      });
       // Обработка клика по карте для добавления метки
       const handleMapClick = (e: any) => {
         if (!isAddingMark) {
-          const coordinates: [number, number] = [e.lngLat.lng, e.lngLat.lat]
-          startAddingMark(coordinates)
+          const coordinates: [number, number] = [e.lngLat.lng, e.lngLat.lat];
+          startAddingMark(coordinates);
         }
-      }
+      };
 
       // Обработка изменения центра и зума
       const handleMoveEnd = () => {
         if (map) {
-          const center = map.getCenter()
-          const zoom = map.getZoom()
-          setCenter([center.lng, center.lat])
-          setZoom(zoom)
+          const center = map.getCenter();
+          const zoom = map.getZoom();
+          setCenter([center.lng, center.lat]);
+          setZoom(zoom);
         }
-      }
+      };
 
       // Обработка ошибок карты
       const handleMapError = (error: any) => {
-        console.error('Ошибка карты:', error)
-      }
+        console.error("Ошибка карты:", error);
+      };
 
-      map.on('click', handleMapClick)
-      map.on('moveend', handleMoveEnd)
-      map.on('error', handleMapError)
+      map.on("click", handleMapClick);
+      map.on("moveend", handleMoveEnd);
+      map.on("error", handleMapError);
 
       return () => {
-        map.off('click', handleMapClick)
-        map.off('moveend', handleMoveEnd)
-        map.off('error', handleMapError)
-      }
+        map.off("click", handleMapClick);
+        map.off("moveend", handleMoveEnd);
+        map.off("error", handleMapError);
+      };
     }
-  }, [map, isMapLoaded, isAddingMark, startAddingMark, setCenter, setZoom])
+  }, [
+    map,
+    mapgl,
+    isMapLoaded,
+    isAddingMark,
+    startAddingMark,
+    setCenter,
+    setZoom,
+  ]);
 
   return (
     <div className="flex-1 relative">
-      <div 
-        id="map-container" 
-        ref={mapRef}
-        className="w-full h-full"
-      />
-      
+      <div id="map-container" className="w-full h-full" />
+
       {/* Отображение меток */}
-      {isMapLoaded && map && marks.map((mark) => (
-        <MarkMarker key={mark.id} mark={mark} map={map} />
-      ))}
-      
+      {isMapLoaded &&
+        map &&
+        marks.map((mark) => <MarkMarker key={mark.id} mark={mark} map={map} />)}
+
       {/* Форма добавления новой метки */}
       {isAddingMark && newMarkPosition && (
-        <NewMarkForm 
+        <NewMarkForm
           position={newMarkPosition}
           onClose={() => useMapStore.getState().cancelAddingMark()}
         />
       )}
     </div>
-  )
-}
+  );
+};
